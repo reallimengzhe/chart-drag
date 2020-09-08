@@ -12,6 +12,7 @@ import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 /* Plugins */
 
 import nuxt_plugin_elementui_a6a1b20a from 'nuxt_plugin_elementui_a6a1b20a' // Source: ..\\plugins\\element-ui (mode: 'all')
+import nuxt_plugin_vuedraggableresizable_246f6124 from 'nuxt_plugin_vuedraggableresizable_246f6124' // Source: ..\\plugins\\vue-draggable-resizable (mode: 'all')
 
 // Component: <ClientOnly>
 Vue.component(ClientOnly.name, ClientOnly)
@@ -166,6 +167,10 @@ async function createApp(ssrContext, config = {}) {
 
   if (typeof nuxt_plugin_elementui_a6a1b20a === 'function') {
     await nuxt_plugin_elementui_a6a1b20a(app.context, inject)
+  }
+
+  if (typeof nuxt_plugin_vuedraggableresizable_246f6124 === 'function') {
+    await nuxt_plugin_vuedraggableresizable_246f6124(app.context, inject)
   }
 
   // Lock enablePreview in context

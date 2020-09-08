@@ -11,7 +11,9 @@ module.exports = {
   loading: { color: '#fff' }, //  页面进度条
   css: ['element-ui/lib/theme-chalk/index.css', 'assets/styles/reset.css'],
   plugins: [
-    { src: '~/plugins/element-ui', ssr: true } // ssr:true代表在服务端渲染,客户端不渲染
+    // ssr:true代表在服务端渲染,客户端不渲染
+    { src: '~/plugins/element-ui', ssr: true },
+    { src: '~/plugins/vue-draggable-resizable', ssr: true }
   ],
   build: {
     vendor: ['element-ui'] // 防止重复打包

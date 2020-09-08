@@ -6,19 +6,43 @@
         trigger="hover"
         placement="right"
         v-for="item in typeList"
-        :open-delay="500"
         :key="item.name"
       >
         <img style="width: 100%;" :src="item.img" />
-        <div class="index-list-item" slot="reference">
+        <div class="index-list-item" slot="reference" @click="handleInsertChart(item)">
           <h5 class="index-list-item-name">{{ item.label }}</h5>
           <h4 class="index-list-item-icon">+</h4>
         </div>
       </el-popover>
     </div>
     <div class="index-preview">
-      <div class="line-chart chart" v-for="item in chartList" :key="item.id" :ref="item.name"></div>
+      <vue-draggable-resizable
+        parent
+        v-for="item in chartList"
+        :w="item.width"
+        :h="item.height"
+        :x="50"
+        :y="50"
+        :min-width="100"
+        :min-height="100"
+        :grid="[10, 10]"
+        :key="item.id"
+        @resizing="handleChartResize(item)"
+      >
+        <div class="chart" :id="item.id"></div>
+      </vue-draggable-resizable>
     </div>
+    <el-drawer :title="'配置 - ' + currentType.label" :visible.sync="configDialog" width="700px">
+      <el-form size="mini" :model="currentChart" label-width="80px">
+        <el-form-item label="图例:">
+          <el-switch v-model="currentChart.legend.show"></el-switch>
+        </el-form-item>
+      </el-form>
+      <footer slot="footer">
+        <el-button @click="configDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleInsertChart">确定</el-button>
+      </footer>
+    </el-drawer>
   </div>
 </template>
 
@@ -46,20 +70,65 @@ export default {
           img: require('~/assets/images/pie-simple.jpg'),
         },
       ],
-      // 图标列表
-      chartList: [{ id: 1, name: '1', type: '' }],
+      // 当前选中的类型
+      currentType: {},
+      // 图表列表
+      chartList: [],
+      // 当前配置的图表
+      currentChartID: 0,
+      currentChart: {
+        width: 400,
+        height: 300,
+        legend: {
+          show: false,
+        },
+      },
       //
       chartInstance: null,
+      // 配置
+      configDialog: false,
+      // loading
+      createLoading: false,
     }
   },
-  mounted() {
-    // this.createChart()
-  },
+  mounted() {},
   methods: {
-    // 创建
-    createChart() {
-      this.chartInstance = echarts.init(this.$refs.lineChart)
-      this.chartInstance.setOption({
+    // 添加新图表
+    handleInsertChart() {
+      this.currentChartID++
+      this.currentType = item
+      this.configDialog = true
+      this.createLoading = true
+      //
+      let data = {
+        id: this.currentType.name + this.currentChartID,
+        type: this.currentType.name,
+        width: this.currentChart.width,
+        height: this.currentChart.height,
+        instance: null,
+      }
+      this.chartList.push(data)
+      //
+      this.$nextTick(() => {
+        switch (this.currentType.name) {
+          case 'Line':
+            this.createLine(data)
+            break
+          case 'Bar':
+            this.createBar(data)
+            break
+          case 'Pie':
+            this.createPie(data)
+            break
+        }
+        this.configDialog = false
+        this.createLoading = false
+      })
+    },
+    // 创建折线图
+    createLine(data) {
+      data.instance = echarts.init(document.getElementById(data.id))
+      data.instance.setOption({
         xAxis: {
           type: 'category',
           data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -75,6 +144,72 @@ export default {
         ],
       })
     },
+    // 创建柱状图
+    createBar(data) {
+      data.instance = echarts.init(document.getElementById(data.id))
+      data.instance.setOption({
+        xAxis: {
+          type: 'category',
+          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        },
+        yAxis: {
+          type: 'value',
+        },
+        series: [
+          {
+            data: [120, 200, 150, 80, 70, 110, 130],
+            type: 'bar',
+          },
+        ],
+      })
+    },
+    // 创建饼图
+    createPie(data) {
+      data.instance = echarts.init(document.getElementById(data.id))
+      data.instance.setOption({
+        title: {
+          text: '某站点用户访问来源',
+          subtext: '纯属虚构',
+          left: 'center',
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b} : {c} ({d}%)',
+        },
+        legend: {
+          orient: 'vertical',
+          left: 'left',
+          data: ['直接访问', '邮件营销', '联盟广告', '视频广告', '搜索引擎'],
+        },
+        series: [
+          {
+            name: '访问来源',
+            type: 'pie',
+            radius: '55%',
+            center: ['50%', '60%'],
+            data: [
+              { value: 335, name: '直接访问' },
+              { value: 310, name: '邮件营销' },
+              { value: 234, name: '联盟广告' },
+              { value: 135, name: '视频广告' },
+              { value: 1548, name: '搜索引擎' },
+            ],
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)',
+              },
+            },
+          },
+        ],
+      })
+    },
+    //
+    handleChartResize(item) {
+      console.log(item)
+      item.instance.resize()
+    },
   },
 }
 </script>
@@ -83,6 +218,7 @@ export default {
 .index {
   display: flex;
   height: 100vh;
+  overflow: hidden;
   &-list {
     width: 200px;
     height: 100%;
@@ -126,6 +262,8 @@ export default {
   }
   &-preview {
     width: calc(100% - 200px);
+    height: 100%;
+    overflow: hidden;
     background-position: 0px 0px, 10px 10px;
     background-size: 20px 20px;
     background-image: linear-gradient(
@@ -147,7 +285,8 @@ export default {
   }
 }
 .chart {
-  width: 300px;
-  height: 300px;
+  width: 100%;
+  height: 100%;
+  background-color: $background-color-deep;
 }
 </style>
