@@ -18,21 +18,31 @@
     <div class="index-preview">
       <vue-draggable-resizable
         parent
+        class="chart"
         v-for="item in chartList"
         :w="item.width"
         :h="item.height"
-        :x="50"
-        :y="50"
+        :x="item.x"
+        :y="item.y"
         :min-width="100"
         :min-height="100"
         :grid="[10, 10]"
         :key="item.id"
         @resizing="handleChartResize(item)"
       >
-        <div class="chart" :id="item.id"></div>
+        <div class="chart-dom" :id="item.id"></div>
+        <div class="chart-operation">
+          <el-link
+            icon="el-icon-edit"
+            type="primary"
+            :underline="false"
+            @click="handleConfig(item)"
+          ></el-link>
+          <el-link icon="el-icon-delete" type="danger" :underline="false"></el-link>
+        </div>
       </vue-draggable-resizable>
     </div>
-    <el-drawer :title="'配置 - ' + currentType.label" :visible.sync="configDialog" width="700px">
+    <el-drawer title="配置" :visible.sync="configDialog" size="700px">
       <el-form size="mini" :model="currentChart" label-width="80px">
         <el-form-item label="图例:">
           <el-switch v-model="currentChart.legend.show"></el-switch>
@@ -40,7 +50,7 @@
       </el-form>
       <footer slot="footer">
         <el-button @click="configDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleInsertChart">确定</el-button>
+        <el-button type="primary" @click="handleSaveConfig">确定</el-button>
       </footer>
     </el-drawer>
   </div>
@@ -70,15 +80,16 @@ export default {
           img: require('~/assets/images/pie-simple.jpg'),
         },
       ],
-      // 当前选中的类型
-      currentType: {},
+      // 默认宽高
+      defaultWidth: 400,
+      defaultHeight: 300,
       // 图表列表
       chartList: [],
       // 当前配置的图表
       currentChartID: 0,
+      //
       currentChart: {
-        width: 400,
-        height: 300,
+        label: '',
         legend: {
           show: false,
         },
@@ -89,28 +100,34 @@ export default {
       configDialog: false,
       // loading
       createLoading: false,
+      // 位置
+      position: 0,
     }
   },
   mounted() {},
   methods: {
     // 添加新图表
-    handleInsertChart() {
+    handleInsertChart(item) {
       this.currentChartID++
-      this.currentType = item
-      this.configDialog = true
       this.createLoading = true
+      this.position += 50
       //
       let data = {
-        id: this.currentType.name + this.currentChartID,
-        type: this.currentType.name,
-        width: this.currentChart.width,
-        height: this.currentChart.height,
+        x: this.position,
+        y: this.position,
+        id: item.name + this.currentChartID,
+        type: item.name,
+        width: this.defaultWidth,
+        height: this.defaultHeight,
         instance: null,
+        legend: {
+          show: false,
+        },
       }
       this.chartList.push(data)
       //
       this.$nextTick(() => {
-        switch (this.currentType.name) {
+        switch (item.name) {
           case 'Line':
             this.createLine(data)
             break
@@ -121,7 +138,6 @@ export default {
             this.createPie(data)
             break
         }
-        this.configDialog = false
         this.createLoading = false
       })
     },
@@ -205,11 +221,19 @@ export default {
         ],
       })
     },
-    //
+    // 调整尺寸
     handleChartResize(item) {
       console.log(item)
       item.instance.resize()
     },
+    // 打开配置
+    handleConfig(item) {
+      console.log(item)
+      this.currentChart = item
+      this.configDialog = true
+    },
+    // 保存配置
+    handleSaveConfig(item) {},
   },
 }
 </script>
@@ -285,8 +309,31 @@ export default {
   }
 }
 .chart {
-  width: 100%;
-  height: 100%;
-  background-color: $background-color-deep;
+  &-dom {
+    width: 100%;
+    height: 100%;
+    background-color: $background-color-shallow;
+  }
+  &-operation {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    // background-color: rgba($color: $color-white, $alpha: 0.2);
+    // backdrop-filter: blur(10px) saturate(80%);
+    backdrop-filter: saturate(180%);
+    opacity: 0;
+    transition: $transition-primary;
+    &:hover {
+      opacity: 1;
+    }
+    .el-link {
+      font-size: $font-size-large;
+    }
+  }
 }
 </style>
