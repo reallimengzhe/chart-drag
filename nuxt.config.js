@@ -13,9 +13,17 @@ module.exports = {
   plugins: [
     // ssr:true代表在服务端渲染,客户端不渲染
     { src: '~/plugins/element-ui', ssr: true },
+    { src: '~/plugins/i18n.js', ssr: true },
     { src: '~/plugins/vue-draggable-resizable', ssr: true }
   ],
   build: {
-    vendor: ['element-ui'] // 防止重复打包
+    vendor: ['element-ui'], // 防止重复打包
+    vendor: ['vue-i18n'] // webpack vue-i18n.bundle.js
+  },
+  generate: {
+    routes: ['/', '/en-US']
+  },
+  router: {
+    middleware: 'i18n'
   }
 }

@@ -5,5 +5,12 @@
     "component": "C:\\\\Users\\\\limengzhe\\\\Desktop\\\\chart-drag\\\\pages\\\\index.vue",
     "chunkName": "pages/index",
     "_name": "_ac65b852"
+  },
+  {
+    "name": "lang",
+    "path": "/:lang",
+    "component": "C:\\\\Users\\\\limengzhe\\\\Desktop\\\\chart-drag\\\\pages\\\\_lang\\\\index.vue",
+    "chunkName": "pages/_lang/index",
+    "_name": "_341e3820"
   }
 ]

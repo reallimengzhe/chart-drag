@@ -1,0 +1,14 @@
+{
+  "links": {
+    "lang": "English",
+    "home": "Home",
+    "about": "About"
+  },
+  "home": {
+    "index": "index",
+    "search": "searchs"
+  },
+  "about": {
+    "title": "About"
+  }
+}
